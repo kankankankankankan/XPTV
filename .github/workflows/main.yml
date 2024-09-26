@@ -2,6 +2,7 @@ name: Combine JSON Files on Change
 
 on:
   push:
+    branches: [ master ]
     paths:
       - 'CMS/XPTV.json'
       - 'CMS/XPAV.json'
