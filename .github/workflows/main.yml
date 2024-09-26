@@ -2,7 +2,7 @@ name: Combine JSON Files on Change
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     workflow_dispatch: # 手动触发
     paths:
       - 'CMS/XPTV.json'
