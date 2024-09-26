@@ -38,4 +38,4 @@ jobs:
         git commit -m 'Combine JSON files into allinone.json'
         git push
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
