@@ -9,7 +9,7 @@ on:
       - 'VOD/XPTV.json'
       - 'VOD/XPAV.json'
       - 'VOD/pan.json'
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   combine-json:
