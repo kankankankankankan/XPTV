@@ -1,52 +1,28 @@
 const cheerio = createCheerio()
-const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/604.1.14 (KHTML, like Gecko)'
+
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 
 const appConfig = {
 	ver: 1,
-	title: '玩偶哥哥',
-	site: 'https://www.wogg.one',
-
+	title: '六趣',
+	site: 'https://wp.0v.fit',
 	tabs: [
 		{
-			name: '电影',
+			name: '電影',
 			ext: {
-				id: '1',
+				id: 1,
 			},
 		},
 		{
-			name: '剧集',
+			name: '劇集',
 			ext: {
-				id: '2',
+				id: 2,
 			},
 		},
 		{
-			name: '臻彩视界',
+			name: '動漫',
 			ext: {
-				id: '44',
-			},
-		},
-		{
-			name: '动漫',
-			ext: {
-				id: '3',
-			},
-		},
-		{
-			name: '综艺',
-			ext: {
-				id: '4',
-			},
-		},
-		{
-			name: '短剧',
-			ext: {
-				id: '6',
-			},
-		},
-		{
-			name: '音乐',
-			ext: {
-				id: '5',
+				id: 4,
 			},
 		},
 	],
@@ -57,12 +33,12 @@ async function getConfig() {
 }
 
 async function getCards(ext) {
+	
 	ext = argsify(ext)
 	let cards = []
 	let { page = 1, id } = ext
 
-	const url = appConfig.site + `/vodshow/${id}--------${page}---.html`
-
+	const url = appConfig.site + `/index.php/vod/show/id/${id}/page/${page}.html`
 	const { data } = await $fetch.get(url, {
 		headers: {
 			'User-Agent': UA,
@@ -70,34 +46,25 @@ async function getCards(ext) {
 	})
 
 	const $ = cheerio.load(data)
-  
-  const t1 = $('title').text()
-  if (t1 === 'Just a moment...') {
-    $utils.openSafari(appConfig.site, UA)
-  }
 
-	const videos = $('.module-item')
+	const videos = $('#main .module-item')
 	videos.each((_, e) => {
 		const href = $(e).find('.module-item-pic a').attr('href')
-		const title = $(e).find('.module-item-pic img').attr('alt')
+		const title = $(e).find('.module-item-pic a').attr('title')
 		const cover = $(e).find('.module-item-pic img').attr('data-src')
-		const text = $(e).find('.module-item-text').eq(0).text()
-		//const lb = $(e).find('.module-item-caption span').eq(1).text().replace('玩偶', '')
-		const dq = $(e).find('.module-item-caption span').eq(2).text().replace(/中国大陆|中国中国大陆/, '国产').replace('中国香港', '港剧').replace('中国台湾', '台剧')
+		const remarks = $(e).find('.module-item-text').text()
 		
-		const remarks = (`${dq} ${text}`).trim()
-		let obj = {
+		if (/六趣/.test(title)) return;
+		cards.push({
 			vod_id: href,
 			vod_name: title,
 			vod_pic: cover,
-			vod_remarks: remarks,
-
+			vod_remarks: remarks, 
+		
 			ext: {
 				url: `${appConfig.site}${href}`,
 			},
-		}
-
-		cards.push(obj)
+		})
 	})
 
 	return jsonify({
@@ -118,13 +85,12 @@ async function getTracks(ext) {
 
 	const $ = cheerio.load(data)
 
-	const playlist = $('.module-row-title')
+	const playlist = $('.module-player-list .module-row-one')
 	playlist.each((_, e) => {
-		const name = $(e).find('h4').text().replace(' - 玩偶哥哥', '')
-		const panShareUrl = $(e).find('p').text()
-		
+		const name = $(e).find('.module-row-title h4').text().replace('- 第1集', '')
+		const panShareUrl = $(e).find('.module-row-title p').text()
 		tracks.push({
-			name: name,
+			name: name.trim(),
 			pan: panShareUrl,
 		})
 	})
@@ -149,7 +115,7 @@ async function search(ext) {
 
 	let text = encodeURIComponent(ext.text)
 	let page = ext.page || 1
-	let url = `${appConfig.site}/vodsearch/${text}----------${page}---.html`
+	let url = `${appConfig.site}/index.php/vod/search/page/${page}/wd/${text}.html`
 
 	const { data } = await $fetch.get(url, {
 		headers: {
@@ -159,23 +125,25 @@ async function search(ext) {
 
 	const $ = cheerio.load(data)
 
-	const videos = $('.module-search-item')
+	const videos = $('#main .module-search-item')
 	videos.each((_, e) => {
-		const href = $(e).find('.video-serial').attr('href')
-		const title = $(e).find('.lazyload').attr('alt')
-		const cover = $(e).find('.lazyload').attr('data-src')
+		const href = $(e).find('.video-info-header h3 a').attr('href')
+		const title = $(e).find('.video-info-header h3 a').attr('title')
+		const cover = $(e).find('.module-item-pic img').attr('data-src')
 		const remarks = $(e).find('.video-serial').text()
+		
+		if (/六趣/.test(title)) return;
 		cards.push({
 			vod_id: href,
 			vod_name: title,
 			vod_pic: cover,
 			vod_remarks: remarks,
-
 			ext: {
 				url: `${appConfig.site}${href}`,
 			},
 		})
 	})
+
 	return jsonify({
 		list: cards,
 	})
