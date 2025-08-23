@@ -13,12 +13,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: '14'
+        node-version: '18'
 
     - name: Combine JSON files
       run: |
@@ -33,7 +33,11 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
         git add allinone.json
-        git commit -m 'Combine JSON files into allinone.json'
-        git push
+        if ! git diff --cached --quiet; then
+          git commit -m 'Combine JSON files into allinone.json'
+          git push
+        else
+          echo "No changes to commit"
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
